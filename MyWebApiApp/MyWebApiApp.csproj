@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -33,6 +33,13 @@
   <ItemGroup>
     <Folder Include="DTOs\Learning\" />
     <Folder Include="Migrations\" />
+  </ItemGroup>
+
+  <!-- Copy Scripts folder to output directory -->
+  <ItemGroup>
+    <None Update="Scripts\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
