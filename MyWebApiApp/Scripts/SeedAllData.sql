@@ -1,0 +1,12 @@
+-- ============================================
+-- DEPRECATED — old Units / Nodes / Lessons(NodeId, Title) schema
+--
+-- Use instead:
+--   MasterSetup.sql   (from Scripts folder: sqlcmd -E -d DuolingoJP -i MasterSetup.sql)
+--   or RunSetup.ps1
+--
+-- Canonical seeds:
+--   SeedLearningContent_EfCompatible.sql
+--   SeedShopItems.sql
+-- ============================================
+PRINT 'SeedAllData.sql is deprecated. Use MasterSetup.sql or SeedLearningContent_EfCompatible.sql + SeedShopItems.sql.';

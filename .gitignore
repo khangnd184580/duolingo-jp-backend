@@ -1,0 +1,48 @@
+## .NET Core
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.swp
+*.log
+*.dll
+*.exe
+*.pdb
+*.db
+*.db-shm
+*.db-wal
+
+# Visual Studio
+.vs/
+.vscode/
+*.vsidx
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+**/packages/*
+
+# Local database files
+*.mdf
+*.ldf
+
+# Migrations (optional - remove if you want to commit migrations)
+# Migrations/
+
+# Secrets (IMPORTANT - never commit these)
+appsettings.Development.json
+# appsettings.Production.json can be committed but should use environment variables for secrets

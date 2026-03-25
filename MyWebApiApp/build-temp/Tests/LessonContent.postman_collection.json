@@ -1,0 +1,162 @@
+{
+  "info": {
+    "name": "Duolingo Japanese - Lesson Content API",
+    "description": "Test collection for Lesson Content API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "pm.environment.set(\"jwt_token\", jsonData.token);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"your-username\",\n  \"password\": \"your-password\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/account/login",
+          "host": ["{{base_url}}"],
+          "path": ["api", "account", "login"]
+        }
+      }
+    },
+    {
+      "name": "2. Get Lesson Content",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/lesson-content/1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "lesson-content", "1"]
+        }
+      }
+    },
+    {
+      "name": "3. Start Lesson",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "pm.environment.set(\"attempt_id\", jsonData.attemptId);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/lesson-content/start/1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "lesson-content", "start", "1"]
+        }
+      }
+    },
+    {
+      "name": "4. Submit Answer (Correct)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"questionId\": 1,\n  \"answerGiven\": \"a\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/lesson-content/submit-answer/{{attempt_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "lesson-content", "submit-answer", "{{attempt_id}}"]
+        }
+      }
+    },
+    {
+      "name": "5. Submit Answer (Wrong)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"questionId\": 2,\n  \"answerGiven\": \"goodbye\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/lesson-content/submit-answer/{{attempt_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "lesson-content", "submit-answer", "{{attempt_id}}"]
+        }
+      }
+    },
+    {
+      "name": "6. Complete Lesson",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/lesson-content/complete/{{attempt_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "lesson-content", "complete", "{{attempt_id}}"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://localhost:7000",
+      "type": "string"
+    }
+  ]
+}
