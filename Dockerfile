@@ -17,10 +17,10 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 # Expose port (Render will set PORT environment variable)
-EXPOSE 5196
+EXPOSE 10000
 
 # Set environment to Production
 ENV ASPNETCORE_ENVIRONMENT=Production
-ENV ASPNETCORE_URLS=http://+:5196
 
-ENTRYPOINT ["dotnet", "MyWebApiApp.dll"]
+# Use PORT from Render environment variable (default to 10000 if not set)
+CMD ASPNETCORE_URLS=http://+:${PORT:-10000} dotnet MyWebApiApp.dll

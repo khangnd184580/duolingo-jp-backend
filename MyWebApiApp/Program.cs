@@ -136,14 +136,15 @@ namespace MyWebApiApp
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            // Enable Swagger in all environments for testing
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseCors("AllowFlutterApp");
+            
+            // Add health check endpoint
+            app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+            
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
