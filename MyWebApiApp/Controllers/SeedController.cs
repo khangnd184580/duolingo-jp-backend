@@ -582,6 +582,44 @@ INSERT INTO ""Items"" (""ItemId"", ""Name"", ""Description"", ""Price"", ""Categ
         }
 
         /// <summary>
+        /// Check lessons without questions
+        /// </summary>
+        [HttpGet("check-lesson-integrity")]
+        public async Task<IActionResult> CheckLessonIntegrity()
+        {
+            try
+            {
+                // Find lessons without questions
+                var lessonsWithoutQuestions = await _context.Lessons
+                    .Include(l => l.Questions)
+                    .Where(l => !l.Questions.Any())
+                    .Select(l => new { l.LessonId, l.LessonName })
+                    .ToListAsync();
+
+                // Find questions without options
+                var questionsWithoutOptions = await _context.Questions
+                    .Include(q => q.Options)
+                    .Where(q => !q.Options.Any())
+                    .Select(q => new { q.QuestionId, q.Content, q.LessonId })
+                    .ToListAsync();
+
+                return Ok(new
+                {
+                    totalLessons = await _context.Lessons.CountAsync(),
+                    lessonsWithoutQuestions = lessonsWithoutQuestions.Count,
+                    lessonList = lessonsWithoutQuestions.Take(10),
+                    totalQuestions = await _context.Questions.CountAsync(),
+                    questionsWithoutOptions = questionsWithoutOptions.Count,
+                    questionList = questionsWithoutOptions.Take(10)
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
         /// Get current database statistics
         /// </summary>
         [HttpGet("stats")]
