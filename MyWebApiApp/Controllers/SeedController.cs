@@ -598,8 +598,8 @@ INSERT INTO ""Items"" (""ItemId"", ""Name"", ""Description"", ""Price"", ""Categ
 
                 // Find questions without options
                 var questionsWithoutOptions = await _context.Questions
-                    .Include(q => q.Options)
-                    .Where(q => !q.Options.Any())
+                    .Include(q => q.QuestionOptions)
+                    .Where(q => !q.QuestionOptions.Any())
                     .Select(q => new { q.QuestionId, q.Content, q.LessonId })
                     .ToListAsync();
 
