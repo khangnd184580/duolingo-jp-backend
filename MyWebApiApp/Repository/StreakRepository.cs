@@ -62,7 +62,8 @@ namespace MyWebApiApp.Repository
                 }
             }
 
-            user.LastStudyDate = today;
+            // Convert Vietnam date to UTC-kind DateTime for PostgreSQL
+            user.LastStudyDate = DateTime.SpecifyKind(today, DateTimeKind.Utc);
 
             if (user.CurrentStreak > user.LongestStreak)
             {

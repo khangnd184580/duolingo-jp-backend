@@ -1,4 +1,4 @@
-﻿namespace MyWebApiApp.Models
+namespace MyWebApiApp.Models
 {
     public class UserItem
     {
@@ -6,7 +6,7 @@
         public string? UserId { get; set; } // Keep as string - proper FK to AspNetUsers
         public int ItemId { get; set; }
         public int Quantity { get; set; } = 1;
-        public DateTime PurchasedAt { get; set; } = DateTime.Now;
+        public DateTime PurchasedAt { get; set; } = DateTime.UtcNow;
         public bool IsEquipped { get; set; }
 
         public AppUser User { get; set; } = null!;
