@@ -16,6 +16,79 @@ namespace MyWebApiApp.Controllers
         }
 
         /// <summary>
+        /// Import ONLY QuestionOptions in small batches (fixes missing 512 options)
+        /// </summary>
+        [HttpPost("import-question-options-batched")]
+        public async Task<IActionResult> ImportQuestionOptionsBatched()
+        {
+            try
+            {
+                var sqlFilePath = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "Scripts",
+                    "question_options_only.sql"
+                );
+
+                if (!System.IO.File.Exists(sqlFilePath))
+                {
+                    return NotFound(new
+                    {
+                        error = "SQL file not found",
+                        path = sqlFilePath,
+                        currentDir = Directory.GetCurrentDirectory()
+                    });
+                }
+
+                var sqlContent = await System.IO.File.ReadAllTextAsync(sqlFilePath);
+
+                // Delete existing first
+                await _context.Database.ExecuteSqlRawAsync("DELETE FROM \"QuestionOptions\"");
+
+                // Extract all INSERT statements
+                var lines = sqlContent.Split('\n')
+                    .Where(l => l.Trim().StartsWith("(") && l.Trim().EndsWith(","))
+                    .Select(l => l.Trim().TrimEnd(','))
+                    .ToList();
+
+                int total = lines.Count;
+                int imported = 0;
+                int batchSize = 50;
+
+                // Insert in batches
+                for (int i = 0; i < lines.Count; i += batchSize)
+                {
+                    var batch = lines.Skip(i).Take(batchSize).ToList();
+                    var batchSql = $"INSERT INTO \"QuestionOptions\" (\"OptionId\", \"QuestionId\", \"OptionText\", \"IsCorrect\") VALUES {string.Join(",\n", batch)};";
+
+                    try
+                    {
+                        await _context.Database.ExecuteSqlRawAsync(batchSql);
+                        imported += batch.Count;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Batch {i}-{i + batchSize} failed: {ex.Message}");
+                    }
+                }
+
+                // Update sequence
+                await _context.Database.ExecuteSqlRawAsync("SELECT setval('\"QuestionOptions_OptionId_seq\"', (SELECT MAX(\"OptionId\") FROM \"QuestionOptions\") + 1)");
+
+                return Ok(new
+                {
+                    message = $"QuestionOptions imported: {imported}/{total}",
+                    imported,
+                    total,
+                    stats = await GetCurrentStats()
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message, stackTrace = ex.StackTrace });
+            }
+        }
+
+        /// <summary>
         /// Import ONLY QuestionOptions (fixes missing 512 options)
         /// </summary>
         [HttpPost("import-question-options-only")]
