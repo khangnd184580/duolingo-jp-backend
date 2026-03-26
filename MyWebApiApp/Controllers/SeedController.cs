@@ -16,6 +16,102 @@ namespace MyWebApiApp.Controllers
         }
 
         /// <summary>
+        /// Find missing QuestionOptions by comparing with expected range
+        /// </summary>
+        [HttpGet("check-missing-options")]
+        public async Task<IActionResult> CheckMissingOptions()
+        {
+            try
+            {
+                // Get all existing OptionIds
+                var existingIds = await _context.QuestionOptions
+                    .Select(q => q.OptionId)
+                    .OrderBy(id => id)
+                    .ToListAsync();
+
+                // Find missing IDs in range 1-2048
+                var missingIds = new List<int>();
+                for (int i = 1; i <= 2048; i++)
+                {
+                    if (!existingIds.Contains(i))
+                    {
+                        missingIds.Add(i);
+                    }
+                }
+
+                return Ok(new
+                {
+                    total = existingIds.Count,
+                    expected = 2048,
+                    missing = missingIds.Count,
+                    missingIds = missingIds,
+                    firstMissing = missingIds.Take(10),
+                    lastMissing = missingIds.Skip(Math.Max(0, missingIds.Count - 10)).Take(10)
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Import specific QuestionOptions by IDs
+        /// </summary>
+        [HttpPost("import-missing-options")]
+        public async Task<IActionResult> ImportMissingOptions([FromBody] List<int> optionIds)
+        {
+            try
+            {
+                var sqlFilePath = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "Scripts",
+                    "question_options_only.sql"
+                );
+
+                if (!System.IO.File.Exists(sqlFilePath))
+                {
+                    return NotFound(new { error = "SQL file not found" });
+                }
+
+                var sqlContent = await System.IO.File.ReadAllTextAsync(sqlFilePath);
+                
+                int imported = 0;
+                foreach (var optionId in optionIds)
+                {
+                    // Find the INSERT statement for this OptionId
+                    var pattern = $"({optionId},";
+                    var lines = sqlContent.Split('\n');
+                    var matchingLine = lines.FirstOrDefault(l => l.Trim().StartsWith(pattern));
+                    
+                    if (matchingLine != null)
+                    {
+                        var values = matchingLine.Trim().TrimEnd(',');
+                        var insertSql = $"INSERT INTO \"QuestionOptions\" (\"OptionId\", \"QuestionId\", \"OptionText\", \"IsCorrect\") VALUES {values};";
+                        
+                        try
+                        {
+                            await _context.Database.ExecuteSqlRawAsync(insertSql);
+                            imported++;
+                        }
+                        catch { }
+                    }
+                }
+
+                return Ok(new
+                {
+                    message = $"Imported {imported} missing options",
+                    imported,
+                    stats = await GetCurrentStats()
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
         /// Import ONLY QuestionOptions in small batches (fixes missing 512 options)
         /// </summary>
         [HttpPost("import-question-options-batched")]
