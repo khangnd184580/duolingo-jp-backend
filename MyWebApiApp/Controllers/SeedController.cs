@@ -16,6 +16,65 @@ namespace MyWebApiApp.Controllers
         }
 
         /// <summary>
+        /// Import ONLY QuestionOptions (fixes missing 512 options)
+        /// </summary>
+        [HttpPost("import-question-options-only")]
+        public async Task<IActionResult> ImportQuestionOptionsOnly()
+        {
+            try
+            {
+                var sqlFilePath = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "Scripts",
+                    "question_options_only.sql"
+                );
+
+                if (!System.IO.File.Exists(sqlFilePath))
+                {
+                    return NotFound(new
+                    {
+                        error = "SQL file not found",
+                        path = sqlFilePath
+                    });
+                }
+
+                var sqlContent = await System.IO.File.ReadAllTextAsync(sqlFilePath);
+
+                // Split and execute
+                var statements = sqlContent
+                    .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(s => s.Trim())
+                    .Where(s => !string.IsNullOrWhiteSpace(s) && !s.StartsWith("--"))
+                    .ToList();
+
+                int executed = 0;
+                foreach (var statement in statements)
+                {
+                    try
+                    {
+                        await _context.Database.ExecuteSqlRawAsync(statement);
+                        executed++;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed statement: {ex.Message}");
+                    }
+                }
+
+                return Ok(new
+                {
+                    message = "QuestionOptions imported successfully!",
+                    executed,
+                    stats = await GetCurrentStats()
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message, stackTrace = ex.StackTrace });
+            }
+        }
+
+        /// <summary>
         /// Import ONLY Shop Items (fixes missing items)
         /// </summary>
         [HttpPost("import-items-only")]
