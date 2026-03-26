@@ -19,7 +19,7 @@ namespace MyWebApiApp.Repository
 
         public async Task<object> ClaimTaskRewardAsync(string userId, int taskId)
         {
-            var today = GetVietnamDate();
+            var today = DateTime.SpecifyKind(GetVietnamDate(), DateTimeKind.Utc);
 
             var userTask = await _context.UserTasks
                 .Include(x => x.Task)
@@ -65,7 +65,7 @@ namespace MyWebApiApp.Repository
         public async Task<List<UserTask>> GetDailyTasksAsync(string userId)
         {
             await EnsureFixedDailyTasksAsync();
-            var today = GetVietnamDate();
+            var today = DateTime.SpecifyKind(GetVietnamDate(), DateTimeKind.Utc);
 
             // Kiểm tra user đã có task hôm nay chưa
             var existingTasks = await _context.UserTasks
@@ -91,7 +91,7 @@ namespace MyWebApiApp.Repository
                     {
                         UserId = userId,
                         TaskId = task.TaskId,
-                        AssignedDate = DateTime.SpecifyKind(today, DateTimeKind.Utc),
+                        AssignedDate = today,
                         Progress = 0,
                         IsCompleted = false,
                         IsClaimed = false
@@ -122,7 +122,7 @@ namespace MyWebApiApp.Repository
 
         public async Task UpdateDailyTaskProgressAsync(string userId)
         {
-            var today = GetVietnamDate();
+            var today = DateTime.SpecifyKind(GetVietnamDate(), DateTimeKind.Utc);
             var (utcStart, utcEnd) = GetVietnamDayRangeUtc(today);
 
             var todayTasks = await _context.UserTasks
