@@ -91,7 +91,7 @@ namespace MyWebApiApp.Repository
                     {
                         UserId = userId,
                         TaskId = task.TaskId,
-                        AssignedDate = today,
+                        AssignedDate = DateTime.SpecifyKind(today, DateTimeKind.Utc),
                         Progress = 0,
                         IsCompleted = false,
                         IsClaimed = false
@@ -258,7 +258,9 @@ namespace MyWebApiApp.Repository
             catch
             {
                 // VN is UTC+7 without DST.
-                return (vietnamDate.Date.AddHours(-7), vietnamDate.Date.AddDays(1).AddHours(-7));
+                var utcStart = DateTime.SpecifyKind(vietnamDate.Date.AddHours(-7), DateTimeKind.Utc);
+                var utcEnd = DateTime.SpecifyKind(vietnamDate.Date.AddDays(1).AddHours(-7), DateTimeKind.Utc);
+                return (utcStart, utcEnd);
             }
         }
     }
